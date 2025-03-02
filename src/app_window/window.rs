@@ -30,6 +30,8 @@ pub struct AppWindow {
     dsns: Vec<RegistryDsn>,
     settings: Vec<DuckDbSetting>,
 
+    last_added_dsn: Option<String>,
+
     about_dialog_join_handle: ui::PopupJoinHandle<()>,
     load_settings_dialog_join_handle: ui::PopupJoinHandle<LoadDsnsDialogResult>,
     setting_dialog_join_handle: ui::PopupJoinHandle<SettingDialogResult>,
@@ -62,6 +64,7 @@ impl AppWindow {
         self.c.about_notice.receive();
         let _ = self.about_dialog_join_handle.join();
         self.c.filter_input.set_enabled(true);
+        self.c.conn_str_input.set_enabled(true);
     }
 
     pub(super) fn open_load_dialog(&mut self, _: nwg::EventData) {
@@ -78,14 +81,21 @@ impl AppWindow {
         self.dsns = res.dsns;
         self.settings.truncate(0);
         self.c.filter_input.set_enabled(true);
+        self.c.conn_str_input.set_enabled(true);
         self.reload_dsns_combo();
+        if let Some(added) = &self.last_added_dsn {
+            self.c.dsn_combo.set_selection_string(added);
+            self.last_added_dsn = None;
+        }
         self.on_dsn_changed(nwg::EventData::NoData);
     }
 
     pub(super) fn on_dsn_changed(&mut self, _: nwg::EventData) {
         self.settings = all_settings();
+        self.c.conn_str_input.set_text("");
         if let Some(dname) = self.c.dsn_combo.selection_string() {
             if let Some(dsn) = self.dsns.iter().find(|d| d.name == dname) {
+                self.c.conn_str_input.set_text(&format!("DSN={{{}}};", &dname));
                 for rs in &dsn.settings {
                     if let Some(mut s) = self.settings.iter_mut().find(|s| s.name == rs.name) {
                         s.dsn_value = rs.value.to_string();
@@ -101,8 +111,8 @@ impl AppWindow {
             }
         }
         self.sort_settings(0, false);
+        self.sort_settings(1, true);
         self.reload_settings_view();
-
     }
 
     pub(super) fn open_setting_dialog(&mut self, ed: nwg::EventData) {
@@ -138,6 +148,7 @@ impl AppWindow {
             });
         }
         self.c.filter_input.set_enabled(true);
+        self.c.conn_str_input.set_enabled(true);
     }
 
     pub(super) fn open_add_dsn_dialog(&mut self, _: nwg::EventData) {
@@ -149,8 +160,30 @@ impl AppWindow {
     pub(super) fn await_add_dsn_dialog(&mut self, _: nwg::EventData) {
         self.c.window.set_enabled(true);
         self.c.add_dsn_notice.receive();
-        let _ = self.add_dsn_dialog_join_handle.join();
+        let res = self.add_dsn_dialog_join_handle.join();
         self.c.filter_input.set_enabled(true);
+        self.c.conn_str_input.set_enabled(true);
+        self.last_added_dsn = res.added_dsn;
+        if self.last_added_dsn.is_some() {
+            self.open_load_dialog(nwg::EventData::NoData)
+        }
+    }
+
+    pub(super) fn on_delete_dsn_button(&mut self, _: nwg::EventData) {
+        if let Some(name) = self.c.dsn_combo.selection_string() {
+            if let Some(dsn) = self.dsns.iter().find(|d| d.name == name) {
+                let confirmed = ui::message_box_warning_yn(&format!(
+                    "Data source: '{}' will be removed from registry, would you like to proceed?", dsn.name));
+                if !confirmed {
+                    return;
+                }
+                match registry::delete_dsn(dsn.dsn_type.clone(), &dsn.name) {
+                    Ok(_) => self.open_load_dialog(nwg::EventData::NoData),
+                    Err(e) => ui::message_box_error(&format!(
+                        "Error removing DNS from registry, type: {:?}, name: {}, message: {}", &dsn.dsn_type, &dsn.name, e))
+                }
+            }
+        }
     }
 
     pub(super) fn open_website(&mut self, _: nwg::EventData) {
@@ -194,6 +227,14 @@ impl AppWindow {
 
     pub(super) fn on_filter_button(&mut self, _: nwg::EventData) {
         self.reload_settings_view()
+    }
+
+    pub(super) fn on_copy_conn_str_button(&mut self, _: nwg::EventData) {
+        use clipboard_win::formats;
+        use clipboard_win::set_clipboard;
+
+        let text = self.c.conn_str_input.text();
+        let _ = set_clipboard(formats::Unicode, &text);
     }
 
     pub(super) fn on_resize(&mut self, _: nwg::EventData) {

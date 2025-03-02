@@ -18,10 +18,19 @@ use super::*;
 
 #[derive(Default, Clone)]
 pub struct AddDsnDialogResult {
+    pub added_dsn: Option<String>
 }
 
 impl AddDsnDialogResult {
-    pub fn new() -> Self {
-        Self { }
+    pub fn success(name: &str) -> Self {
+        Self {
+            added_dsn: Some(name.to_string())
+        }
+    }
+
+    pub fn cancelled() -> Self {
+        Self {
+            added_dsn: None
+        }
     }
 }

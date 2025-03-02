@@ -35,6 +35,8 @@ use add_dsn_dialog::AddDsnDialog;
 use add_dsn_dialog::AddDsnDialogArgs;
 use add_dsn_dialog::AddDsnDialogResult;
 use common::all_settings;
+use common::registry;
+use common::DsnType;
 use common::DuckDbSetting;
 use common::RegistryDsn;
 use load_dsns_dialog::LoadDsnsDialog;

@@ -84,17 +84,25 @@ impl ui::Events<AppWindowControls> for AppWindowEvents {
             .build(&mut self.events)?;
 
         ui::event_builder()
-            .control(&c.new_dsn_button)
+            .control(&c.copy_conn_str_button)
+            .event(nwg::Event::OnButtonClick)
+            .handler(AppWindow::on_copy_conn_str_button)
+            .build(&mut self.events)?;
+        ui::event_builder()
+            .control(&c.add_dsn_button)
             .event(nwg::Event::OnButtonClick)
             .handler(AppWindow::open_add_dsn_dialog)
             .build(&mut self.events)?;
-
+        ui::event_builder()
+            .control(&c.delete_dsn_button)
+            .event(nwg::Event::OnButtonClick)
+            .handler(AppWindow::on_delete_dsn_button)
+            .build(&mut self.events)?;
         ui::event_builder()
             .control(&c.reload_button)
             .event(nwg::Event::OnButtonClick)
             .handler(AppWindow::open_load_dialog)
             .build(&mut self.events)?;
-
         ui::event_builder()
             .control(&c.close_button)
             .event(nwg::Event::OnButtonClick)

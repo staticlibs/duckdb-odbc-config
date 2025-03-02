@@ -39,7 +39,10 @@ pub(super) struct AppWindowControls {
     pub(super) filter_button: nwg::Button,
 
     pub(super) settings_view: nwg::ListView,
-    pub(super) new_dsn_button: nwg::Button,
+
+    pub(super) conn_str_input: nwg::TextInput,
+    pub(super) copy_conn_str_button: nwg::Button,
+    pub(super) add_dsn_button: nwg::Button,
     pub(super) delete_dsn_button: nwg::Button,
     pub(super) reload_button: nwg::Button,
     pub(super) close_button: nwg::Button,
@@ -75,10 +78,10 @@ impl ui::Controls for AppWindowControls {
             .build(&mut self.icon)?;
 
         nwg::Window::builder()
-            .size((640, 480))
+            .size((720, 480))
             .icon(Some(&self.icon))
             .center(true)
-            .title("DuckDB ODBC Configuration Tool")
+            .title("DuckDB ODBC Configuration")
             .build(&mut self.window)?;
 
         // menu
@@ -173,13 +176,23 @@ impl ui::Controls for AppWindowControls {
 
         // buttons
 
+        nwg::TextInput::builder()
+            .parent(&self.window)
+            .font(Some(&self.font_normal))
+            .readonly(true)
+            .build(&mut self.conn_str_input)?;
         nwg::Button::builder()
-            .text("New DSN")
+            .text("Copy conn str")
             .font(Some(&self.font_normal))
             .parent(&self.window)
-            .build(&mut self.new_dsn_button)?;
+            .build(&mut self.copy_conn_str_button)?;
         nwg::Button::builder()
-            .text("Delete DSN")
+            .text("Add DSN")
+            .font(Some(&self.font_normal))
+            .parent(&self.window)
+            .build(&mut self.add_dsn_button)?;
+        nwg::Button::builder()
+            .text("Remove DSN")
             .font(Some(&self.font_normal))
             .parent(&self.window)
             .build(&mut self.delete_dsn_button)?;
@@ -227,7 +240,8 @@ impl ui::Controls for AppWindowControls {
             .control(&self.dsn_combo)
             .control(&self.filter_input)
             .control(&self.filter_button)
-            .control(&self.new_dsn_button)
+            .control(&self.copy_conn_str_button)
+            .control(&self.add_dsn_button)
             .control(&self.delete_dsn_button)
             .control(&self.reload_button)
             .control(&self.close_button)

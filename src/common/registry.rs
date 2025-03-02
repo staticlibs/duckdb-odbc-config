@@ -17,7 +17,7 @@
 use super::*;
 
 use winreg::RegKey;
-use winreg::enums::*;
+use winreg::enums;
 
 pub const DRIVER_KEY_PATH: &str = "SOFTWARE\\ODBC\\ODBCINST.INI\\DuckDB Driver";
 pub const ODBC_INI_SUBPATH: &str = "SOFTWARE\\ODBC\\ODBC.INI";
@@ -52,7 +52,7 @@ pub enum Root {
 }
 
 pub fn duckdb_driver_path() -> Result<String, ConfigError> {
-    let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
+    let hklm = RegKey::predef(enums::HKEY_LOCAL_MACHINE);
     let driver_key = match hklm.open_subkey(DRIVER_KEY_PATH) {
         Ok(key) => key,
         Err(e) => return Err(ConfigError::from_string(format!(
@@ -66,7 +66,7 @@ pub fn duckdb_driver_path() -> Result<String, ConfigError> {
 }
 
 pub fn list_subkeys(root: Root, path: &str) -> Result<Vec<String>, ConfigError> {
-    let key = open_key(root, path)?;
+    let key = open_key(root, path, enums::KEY_READ)?;
     let res = key.enum_keys()
         .filter_map(|r| match r {
             Ok(r) => Some(r),
@@ -77,7 +77,7 @@ pub fn list_subkeys(root: Root, path: &str) -> Result<Vec<String>, ConfigError> 
 }
 
 pub fn list_values(root: Root, path: &str) -> Result<Vec<RegistrySetting>, ConfigError> {
-    let key = open_key(root, path)?;
+    let key = open_key(root, path, enums::KEY_READ)?;
     let res = key.enum_values()
         .filter_map(|r| match r {
             Ok((name, rval)) => {
@@ -96,18 +96,18 @@ pub fn create_dsn(dsn_type: DsnType, name: &str,  database: &str) -> Result<(), 
         DsnType::USER => Root::HKCU,
         DsnType::SYSTEM => Root::HKLM,
     };
-    let odbc_ini_key = open_key(root, ODBC_INI_SUBPATH)?;
+    let odbc_ini_key = open_key(root, ODBC_INI_SUBPATH, enums::KEY_READ)?;
     match odbc_ini_key.open_subkey(name) {
         Ok(_) => return Err(ConfigError::from_string(format!(
             "Data source already exist, name: {}", name))),
         Err(_) => {},
     }
     odbc_ini_key.create_subkey(name)?;
-    let dsn_key = odbc_ini_key.open_subkey_with_flags(name, KEY_SET_VALUE)?;
+    let dsn_key = odbc_ini_key.open_subkey_with_flags(name, enums::KEY_SET_VALUE)?;
     let driver_path = duckdb_driver_path()?;
     dsn_key.set_value(DRIVER_SETTING_NAME, &driver_path)?;
     dsn_key.set_value(DATABASE_SETTING_NAME, &database.to_string())?;
-    let listing_key = odbc_ini_key.open_subkey_with_flags(DS_LISTING_SUBPATH, KEY_SET_VALUE)?;
+    let listing_key = odbc_ini_key.open_subkey_with_flags(DS_LISTING_SUBPATH, enums::KEY_SET_VALUE)?;
     listing_key.set_value(name, &DRIVER_LISTING_LABEL)?;
     Ok(())
 }
@@ -117,17 +117,19 @@ pub fn delete_dsn(dsn_type: DsnType, name: &str) -> Result<(), ConfigError> {
         DsnType::USER => Root::HKCU,
         DsnType::SYSTEM => Root::HKLM,
     };
-    let odbc_ini_key = open_key(root, ODBC_INI_SUBPATH)?;
-    // delete todo
+    let odbc_ini_key = open_key(root, ODBC_INI_SUBPATH, enums::KEY_WRITE)?;
+    odbc_ini_key.delete_subkey(name)?;
+    let listing_key = odbc_ini_key.open_subkey_with_flags(DS_LISTING_SUBPATH, enums::KEY_SET_VALUE)?;
+    listing_key.delete_value(name)?;
     Ok(())
 }
 
-fn open_key(root: Root, path: &str) -> Result<RegKey, ConfigError> {
+fn open_key(root: Root, path: &str, perms: u32) -> Result<RegKey, ConfigError> {
     let root_key = match root {
-        Root::HKLM => RegKey::predef(HKEY_LOCAL_MACHINE),
-        Root::HKCU => RegKey::predef(HKEY_CURRENT_USER),
+        Root::HKLM => RegKey::predef(enums::HKEY_LOCAL_MACHINE),
+        Root::HKCU => RegKey::predef(enums::HKEY_CURRENT_USER),
     };
-    match root_key.open_subkey(path) {
+    match root_key.open_subkey_with_flags(path, perms) {
         Ok(key) => Ok(key),
         Err(e) => Err(ConfigError::from_string(format!(
             "Cannot open registry key, path: '{:?}\\{}', message: {}", root, path, e)))

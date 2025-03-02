@@ -21,7 +21,7 @@ use crate::common::DsnType;
 pub struct AddDsnDialog {
     pub(super) c: AddDsnDialogControls,
 
-    loaded_dsns: AddDsnDialogResult,
+    added_dsn: AddDsnDialogResult,
     args: AddDsnDialogArgs,
 }
 
@@ -86,7 +86,10 @@ impl AddDsnDialog {
             DsnType::USER
         };
         match registry::create_dsn(dsn_type, &name, &dbpath) {
-            Ok(()) => self.close(nwg::EventData::NoData),
+            Ok(()) => {
+                self.added_dsn = AddDsnDialogResult::success(&name);
+                self.close(nwg::EventData::NoData)
+            },
             Err(e) => ui::message_box_error(&format!(
                 "Cannot create Data Source, name: {}, type: {}, DB path: {}, message: {}", &name, &dsn_type_st, &dbpath, e))
         }
@@ -116,10 +119,11 @@ impl ui::PopupDialog<AddDsnDialogArgs, AddDsnDialogResult> for AddDsnDialog {
     }
 
     fn init(&mut self) {
+       self.added_dsn = AddDsnDialogResult::cancelled()
     }
 
     fn result(&mut self) -> AddDsnDialogResult {
-        AddDsnDialogResult { }
+        self.added_dsn.clone()
     }
 
     fn close(&mut self, _: nwg::EventData) {
