@@ -20,8 +20,9 @@ use super::*;
 pub(super) struct SettingDialogLayout {
     root_layout: nwg::FlexboxLayout,
     name_layout: nwg::FlexboxLayout,
-    current_value_layout: nwg::FlexboxLayout,
-    new_value_layout: nwg::FlexboxLayout,
+    default_value_layout: nwg::FlexboxLayout,
+    dsn_value_layout: nwg::FlexboxLayout,
+    bool_value_layout: nwg::FlexboxLayout,
     description_layout: nwg::FlexboxLayout,
     buttons_layout: nwg::FlexboxLayout,
 }
@@ -48,33 +49,56 @@ impl ui::Layout<SettingDialogControls> for SettingDialogLayout {
             .parent(&c.window)
             .flex_direction(ui::FlexDirection::Row)
             .auto_spacing(None)
-            .child(&c.current_value_label)
+            .child(&c.default_value_label)
             .child_size(ui::size_builder()
                 .width_label_normal()
                 .height_input_form_row()
                 .build())
-            .child(&c.current_value_input)
+            .child(&c.default_value_input)
             .child_margin(ui::margin_builder()
                 .start_pt(5)
                 .build())
             .child_flex_grow(1.0)
-            .build_partial(&self.current_value_layout)?;
+            .build_partial(&self.default_value_layout)?;
 
         nwg::FlexboxLayout::builder()
             .parent(&c.window)
             .flex_direction(ui::FlexDirection::Row)
             .auto_spacing(None)
-            .child(&c.new_value_label)
+            .child(&c.dsn_value_label)
             .child_size(ui::size_builder()
                 .width_label_normal()
                 .height_input_form_row()
                 .build())
-            .child(&c.new_value_input)
+            .child(&c.dsn_value_input)
             .child_margin(ui::margin_builder()
                 .start_pt(5)
                 .build())
             .child_flex_grow(1.0)
-            .build_partial(&self.new_value_layout)?;
+            .child(&c.dbpath_button)
+            .child_size(ui::size_builder()
+                .width_button_normal()
+                .height_button()
+                .build())
+            .child_margin(ui::margin_builder()
+                .start_pt(5)
+                .build())
+            .build_partial(&self.dsn_value_layout)?;
+
+        nwg::FlexboxLayout::builder()
+            .parent(&c.window)
+            .flex_direction(ui::FlexDirection::Row)
+            .auto_spacing(None)
+            .child(&c.bool_value_checkbox)
+            .child_size(ui::size_builder()
+                .width_auto()
+                .height_input_form_row()
+                .build())
+            .child_flex_grow(1.0)
+            .child_margin(ui::margin_builder()
+                .start_no_label_normal()
+                .build())
+            .build_partial(&self.bool_value_layout)?;
 
         nwg::FlexboxLayout::builder()
             .parent(&c.window)
@@ -96,10 +120,18 @@ impl ui::Layout<SettingDialogControls> for SettingDialogLayout {
             .flex_direction(ui::FlexDirection::Row)
             .justify_content(ui::JustifyContent::FlexEnd)
             .auto_spacing(None)
-            .child(&c.change_button)
+            .child(&c.apply_button)
             .child_size(ui::size_builder()
                 .width_button_wide()
                 .height_button()
+                .build())
+            .child(&c.delete_button)
+            .child_size(ui::size_builder()
+                .width_button_normal()
+                .height_button()
+                .build())
+            .child_margin(ui::margin_builder()
+                .start_pt(5)
                 .build())
             .child(&c.close_button)
             .child_size(ui::size_builder()
@@ -115,8 +147,9 @@ impl ui::Layout<SettingDialogControls> for SettingDialogLayout {
             .parent(&c.window)
             .flex_direction(ui::FlexDirection::Column)
             .child_layout(&self.name_layout)
-            .child_layout(&self.current_value_layout)
-            .child_layout(&self.new_value_layout)
+            .child_layout(&self.default_value_layout)
+            .child_layout(&self.dsn_value_layout)
+            .child_layout(&self.bool_value_layout)
             .child_layout(&self.description_layout)
             .child_flex_grow(1.0)
             .child_layout(&self.buttons_layout)

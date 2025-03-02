@@ -27,16 +27,18 @@ pub(super) struct SettingDialogControls {
 
     pub(super) name_label: nwg::Label,
     pub(super) name_input: nwg::TextInput,
-    pub(super) current_value_label: nwg::Label,
-    pub(super) current_value_input: nwg::TextInput,
-    pub(super) new_value_label: nwg::Label,
-    pub(super) new_value_input: nwg::TextInput,
+    pub(super) default_value_label: nwg::Label,
+    pub(super) default_value_input: nwg::TextInput,
+    pub(super) dsn_value_label: nwg::Label,
+    pub(super) dsn_value_input: nwg::TextInput,
+    pub(super) dbpath_button: nwg::Button,
+    pub(super) dbpath_chooser: nwg::FileDialog,
+    pub(super) bool_value_checkbox: nwg::CheckBox,
     pub(super) description_label: nwg::Label,
 
-    pub(super) change_button: nwg::Button,
+    pub(super) apply_button: nwg::Button,
+    pub(super) delete_button: nwg::Button,
     pub(super) close_button: nwg::Button,
-
-    pub(super) change_notice: ui::SyncNotice,
 }
 
 impl ui::Controls for SettingDialogControls {
@@ -54,7 +56,7 @@ impl ui::Controls for SettingDialogControls {
             .build(&mut self.icon)?;
 
         nwg::Window::builder()
-            .size((480, 200))
+            .size((480, 210))
             .icon(Some(&self.icon))
             .center(true)
             .title("Change Setting")
@@ -72,26 +74,42 @@ impl ui::Controls for SettingDialogControls {
             .build(&mut self.name_input)?;
 
         nwg::Label::builder()
-            .text("Current value:")
+            .text("Default value:")
             .font(Some(&self.font_normal))
             .parent(&self.window)
-            .build(&mut self.current_value_label)?;
+            .build(&mut self.default_value_label)?;
         nwg::TextInput::builder()
             .readonly(true)
             .font(Some(&self.font_normal))
             .parent(&self.window)
-            .build(&mut self.current_value_input)?;
+            .build(&mut self.default_value_input)?;
 
         nwg::Label::builder()
-            .text("New value:")
+            .text("DSN value:")
             .font(Some(&self.font_normal))
             .parent(&self.window)
-            .build(&mut self.new_value_label)?;
+            .build(&mut self.dsn_value_label)?;
         nwg::TextInput::builder()
             .flags(nwg::TextInputFlags::VISIBLE)
             .font(Some(&self.font_normal))
             .parent(&self.window)
-            .build(&mut self.new_value_input)?;
+            .build(&mut self.dsn_value_input)?;
+        nwg::Button::builder()
+            .text("Choose")
+            .font(Some(&self.font_normal))
+            .parent(&self.window)
+            .build(&mut self.dbpath_button)?;
+        nwg::FileDialog::builder()
+            .title("Choose database file")
+            .action(nwg::FileDialogAction::Open)
+            .build(&mut self.dbpath_chooser)?;
+
+        nwg::CheckBox::builder()
+            .check_state(nwg::CheckBoxState::Unchecked)
+            .text("Set value ON/OFF")
+            .font(Some(&self.font_normal))
+            .parent(&self.window)
+            .build(&mut self.bool_value_checkbox)?;
 
         nwg::Label::builder()
             .font(Some(&self.font_normal))
@@ -99,19 +117,20 @@ impl ui::Controls for SettingDialogControls {
             .build(&mut self.description_label)?;
 
         nwg::Button::builder()
-            .text("Apply change")
+            .text("Apply value")
             .font(Some(&self.font_normal))
             .parent(&self.window)
-            .build(&mut self.change_button)?;
+            .build(&mut self.apply_button)?;
         nwg::Button::builder()
-            .text("Close")
+            .text("Delete")
+            .font(Some(&self.font_normal))
+            .parent(&self.window)
+            .build(&mut self.delete_button)?;
+        nwg::Button::builder()
+            .text("Cancel")
             .font(Some(&self.font_normal))
             .parent(&self.window)
             .build(&mut self.close_button)?;
-
-        ui::notice_builder()
-            .parent(&self.window)
-            .build(&mut self.change_notice)?;
 
         self.layout.build(&self)?;
 
@@ -121,9 +140,12 @@ impl ui::Controls for SettingDialogControls {
     fn update_tab_order(&self) {
         ui::tab_order_builder()
             .control(&self.name_input)
-            .control(&self.current_value_input)
-            .control(&self.new_value_input)
-            .control(&self.change_button)
+            .control(&self.default_value_input)
+            .control(&self.dsn_value_input)
+            .control(&self.dbpath_button)
+            .control(&self.bool_value_checkbox)
+            .control(&self.apply_button)
+            .control(&self.delete_button)
             .control(&self.close_button)
             .build();
     }

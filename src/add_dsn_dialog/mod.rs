@@ -23,11 +23,7 @@ mod nui;
 mod result;
 
 use std::thread;
-use std::time::Duration;
-use std::time::Instant;
 
-use clipboard_win::formats;
-use clipboard_win::set_clipboard;
 use nwg::NativeUi;
 
 use crate::*;

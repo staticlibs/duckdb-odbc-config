@@ -23,37 +23,62 @@ pub struct SettingDialog {
 
     args: SettingDialogArgs,
     result: SettingDialogResult,
-    change_join_handle: ui::PopupJoinHandle<SettingChangeDialogResult>,
 }
 
 impl SettingDialog {
-   pub(super) fn open_change_dialog(&mut self, _: nwg::EventData) {
-       self.c.window.set_enabled(false);
-       let value = self.c.new_value_input.text().trim().to_string();
-       let args = SettingChangeDialogArgs::new(
-           &self.c.change_notice, self.args.setting.name.clone(), value);
-       self.change_join_handle = SettingChangeDialog::popup(args);
-   }
-
-    pub(super) fn await_change_dialog(&mut self, _: nwg::EventData) {
-        self.c.window.set_enabled(true);
-        self.c.change_notice.receive();
-        let res = self.change_join_handle.join();
-        if res.success {
-            self.c.current_value_input.set_text(&res.effective_value);
-            self.result = SettingDialogResult::success(self.args.row_idx, res.effective_value.clone());
-        } else {
-            self.result = SettingDialogResult::failure();
+    pub(super) fn on_apply_button(&mut self, _: nwg::EventData) {
+        let value = self.c.dsn_value_input.text().trim().to_string();
+        let dsn = &self.args.dsn;
+        let st_name = &self.args.setting.name;
+        match registry::set_dsn_value(dsn.dsn_type.clone(), &dsn.name, st_name, &value) {
+            Ok(_) => {
+                self.result = SettingDialogResult::success();
+                self.close(nwg::EventData::NoData)
+            },
+            Err(e) => ui::message_box_error(&format!(
+                "Error setting value, DSN: '{}', setting name: '{}', value: '{}', message: '{}'", dsn.name, st_name, value, e))
         }
-        ui::shake_window(&self.c.window);
-        self.c.update_tab_order();
     }
 
-    pub(super) fn on_new_value_change(&mut self, _: nwg::EventData) {
-        let cur_val = self.c.current_value_input.text();
-        let new_val = self.c.new_value_input.text();
-        if new_val != cur_val {
-            self.c.change_button.set_enabled(true);
+    pub(super) fn on_delete_button(&mut self, _: nwg::EventData) {
+        let dsn = &self.args.dsn;
+        let st_name = &self.args.setting.name;
+        let confirmed = ui::message_box_warning_yn(&format!(
+            "Value: '{}' will be deleted from DSN: '{}'. Would you like to proceed?", st_name, dsn.name));
+        if !confirmed {
+            return;
+        }
+        match registry::delete_dsn_value(dsn.dsn_type.clone(), &dsn.name, st_name) {
+            Ok(_) => {
+                self.result = SettingDialogResult::success();
+                self.close(nwg::EventData::NoData)
+            },
+            Err(e) => ui::message_box_error(&format!(
+                "Error deleting value, DSN: '{}', setting name: '{}', message: '{}'", dsn.name, st_name, e))
+        }
+    }
+
+    pub(super) fn on_bool_value_change(&mut self, _: nwg::EventData) {
+        let checked = self.c.bool_value_checkbox.check_state() == nwg::CheckBoxState::Checked;
+        let value = if checked {
+            "true"
+        } else {
+            "false"
+        };
+        self.c.dsn_value_input.set_text(&value);
+    }
+
+    pub(super) fn on_choose_db_file(&mut self, _: nwg::EventData) {
+        if let Ok(dir) = std::env::current_dir() {
+            if let Some(d) = dir.to_str() {
+                let _ = self.c.dbpath_chooser.set_default_folder(d);
+            }
+        }
+        if self.c.dbpath_chooser.run(Some(&self.c.window)) {
+            if let Ok(file) = self.c.dbpath_chooser.get_selected_item() {
+                let fpath_st = file.to_string_lossy().to_string();
+                self.c.dsn_value_input.set_text(&fpath_st);
+            }
         }
     }
 }
@@ -73,13 +98,31 @@ impl ui::PopupDialog<SettingDialogArgs, SettingDialogResult> for SettingDialog {
     }
 
     fn init(&mut self) {
-        self.c.name_input.set_text(&self.args.setting.name);
-        // todo
-        self.c.current_value_input.set_text(&self.args.setting.default_value);
-        self.c.new_value_input.set_text(&self.args.setting.default_value);
+        let st = &self.args.setting;
+        self.c.name_input.set_text(&st.name);
+        self.c.default_value_input.set_text(&st.default_value);
+        if let Some(dsn_st) = self.args.dsn.settings.iter().find(|s| s.name == st.name) {
+            self.c.dsn_value_input.set_text(&dsn_st.value);
+            self.c.delete_button.set_enabled(true);
+        } else {
+            self.c.delete_button.set_enabled(false);
+        }
+        if "BOOLEAN" == st.input_type {
+            self.c.dsn_value_input.set_readonly(true);
+            self.c.bool_value_checkbox.set_enabled(true);
+        } else {
+            self.c.dsn_value_input.set_readonly(false);
+            self.c.bool_value_checkbox.set_enabled(false);
+        }
+        if "database" == st.name {
+            self.c.dbpath_button.set_enabled(true);
+            self.c.delete_button.set_enabled(false);
+        } else {
+            self.c.dbpath_button.set_enabled(false);
+        }
         let desc_text = ui::wrap_label_text(&self.args.setting.description, 65);
         self.c.description_label.set_text(&desc_text);
-        self.c.change_button.set_enabled(false);
+        self.result = SettingDialogResult::failure();
         ui::shake_window(&self.c.window);
     }
 

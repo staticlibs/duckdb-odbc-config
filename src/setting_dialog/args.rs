@@ -19,16 +19,16 @@ use super::*;
 #[derive(Default)]
 pub struct SettingDialogArgs {
     notice_sender:  ui::SyncNoticeSender,
-    pub(super) row_idx: usize,
+    pub(super) dsn: RegistryDsn,
     pub(super) setting: DuckDbSetting,
 }
 
 impl SettingDialogArgs {
-    pub fn new(notice: &ui::SyncNotice, row_idx: usize, setting: DuckDbSetting) -> Self {
+    pub fn new(notice: &ui::SyncNotice, dsn: RegistryDsn, setting: DuckDbSetting) -> Self {
         Self {
             notice_sender: notice.sender(),
-            row_idx,
-            setting
+            dsn,
+            setting,
         }
     }
 }

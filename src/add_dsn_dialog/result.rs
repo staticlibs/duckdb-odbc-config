@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-use super::*;
-
 #[derive(Default, Clone)]
 pub struct AddDsnDialogResult {
     pub added_dsn: Option<String>

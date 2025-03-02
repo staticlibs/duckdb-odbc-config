@@ -8,7 +8,6 @@ edition = "2018"
 embed-resource = "1.8"
 
 [dependencies]
-chrono = "0.4.39"
 clipboard-win = "4.5.0"
 nwg = {version = "1.0.12", package = "native-windows-gui", features = ["all", "flexbox"]}
 nwg_ui = "1.0.1"

@@ -17,24 +17,18 @@
 #[derive(Default, Clone)]
 pub struct SettingDialogResult {
     pub success: bool,
-    pub row_idx: usize,
-    pub effective_value: String,
 }
 
 impl SettingDialogResult {
-    pub(super) fn success(row_idx: usize, effective_value: String) -> Self {
+    pub(super) fn success() -> Self {
         Self {
             success: true,
-            row_idx,
-            effective_value
         }
     }
 
     pub(super) fn failure() -> Self {
         Self {
             success: false,
-            row_idx: 0,
-            effective_value: String::new()
         }
     }
 }

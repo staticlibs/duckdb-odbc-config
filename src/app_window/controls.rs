@@ -81,7 +81,7 @@ impl ui::Controls for AppWindowControls {
             .size((720, 480))
             .icon(Some(&self.icon))
             .center(true)
-            .title("DuckDB ODBC Configuration")
+            .title("DuckDB ODBC Configuration [EXPERIMENTAL]")
             .build(&mut self.window)?;
 
         // menu
@@ -157,7 +157,7 @@ impl ui::Controls for AppWindowControls {
             index: Some(1),
             fmt: Some(nwg::ListViewColumnFlags::LEFT),
             width: Some(80),
-            text: Some("DSN Value".to_string())
+            text: Some("DSN value".to_string())
         });
         self.settings_view.set_column_sort_arrow(1, Some(nwg::ListViewColumnSortArrow::Down));
         self.settings_view.insert_column(nwg::InsertListViewColumn{

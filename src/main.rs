@@ -22,7 +22,6 @@ mod add_dsn_dialog;
 mod app_window;
 mod load_dsns_dialog;
 mod setting_dialog;
-mod setting_change_dialog;
 
 use nwg::NativeUi;
 

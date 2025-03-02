@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-pub static DUCKDB_VERSION: &str = "1.2.1";
+pub static DUCKDB_VERSION: &str = "1.3-dev";

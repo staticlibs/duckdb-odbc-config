@@ -36,9 +36,8 @@ use ui::PopupDialog;
 use ui::PopupJoinHandle;
 
 use common::DuckDbSetting;
-use setting_change_dialog::SettingChangeDialog;
-use setting_change_dialog::SettingChangeDialogArgs;
-use setting_change_dialog::SettingChangeDialogResult;
+use common::RegistryDsn;
+use common::registry;
 
 pub(super) use args::SettingDialogArgs;
 pub(super) use dialog::SettingDialog;

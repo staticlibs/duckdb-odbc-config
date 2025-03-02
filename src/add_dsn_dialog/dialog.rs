@@ -37,7 +37,6 @@ impl AddDsnDialog {
                 let _ = self.c.dbpath_chooser.set_default_folder(d);
             }
         }
-
         if self.c.dbpath_chooser.run(Some(&self.c.window)) {
             self.c.dbpath_input.set_text("");
             if let Ok(file) = self.c.dbpath_chooser.get_selected_item() {
@@ -91,7 +90,7 @@ impl AddDsnDialog {
                 self.close(nwg::EventData::NoData)
             },
             Err(e) => ui::message_box_error(&format!(
-                "Cannot create Data Source, name: {}, type: {}, DB path: {}, message: {}", &name, &dsn_type_st, &dbpath, e))
+                "Cannot create Data Source, name: '{}', type: '{}', DB path: '{}', message: '{}'", &name, &dsn_type_st, &dbpath, e))
         }
     }
 

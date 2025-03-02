@@ -116,39 +116,38 @@ impl AppWindow {
     }
 
     pub(super) fn open_setting_dialog(&mut self, ed: nwg::EventData) {
-        let row_idx = if let nwg::EventData::OnListViewItemIndex
-        { row_index: row_idx, .. } = ed {
-            row_idx
-        } else {
-            return;
-        };
-        let name = match self.c.settings_view.item(row_idx, 0, 1<<16) {
-            Some(item) => item.text,
-            None => return
-        };
-        let st = match self.settings.iter().find(|s| s.name == name) {
-            Some(st) => st.clone(),
-            None => return
-        };
-        self.c.window.set_enabled(false);
-        let args = SettingDialogArgs::new(&self.c.setting_notice, row_idx, st);
-        self.setting_dialog_join_handle = SettingDialog::popup(args);
+        if let Some(name) = self.c.dsn_combo.selection_string() {
+            if let Some(dsn) = self.dsns.iter().find(|d| d.name == name) {
+                let row_idx = if let nwg::EventData::OnListViewItemIndex
+                { row_index: row_idx, .. } = ed {
+                    row_idx
+                } else {
+                    return;
+                };
+                let name = match self.c.settings_view.item(row_idx, 0, 1<<16) {
+                    Some(item) => item.text,
+                    None => return
+                };
+                let setting = match self.settings.iter().find(|s| s.name == name) {
+                    Some(st) => st.clone(),
+                    None => return
+                };
+                self.c.window.set_enabled(false);
+                let args = SettingDialogArgs::new(&self.c.setting_notice, dsn.clone(), setting);
+                self.setting_dialog_join_handle = SettingDialog::popup(args);
+            }
+        }
     }
 
     pub(super) fn await_setting_dialog(&mut self, _: nwg::EventData) {
         self.c.window.set_enabled(true);
         self.c.setting_notice.receive();
         let res = self.setting_dialog_join_handle.join();
-        if res.success {
-            self.c.settings_view.update_item(res.row_idx, nwg::InsertListViewItem {
-                index: Some(res.row_idx as i32),
-                column_index: 1,
-                text: Some(res.effective_value.clone()),
-                image: None
-            });
-        }
         self.c.filter_input.set_enabled(true);
         self.c.conn_str_input.set_enabled(true);
+        if res.success {
+            self.open_load_dialog(nwg::EventData::NoData);
+        }
     }
 
     pub(super) fn open_add_dsn_dialog(&mut self, _: nwg::EventData) {
@@ -241,6 +240,7 @@ impl AppWindow {
         self.c.update_tab_order();
     }
 
+    #[allow(dead_code)]
     fn get_cmd_args() -> Vec<String> {
         let mut res = vec!();
         for aos in env::args_os() {
@@ -265,6 +265,7 @@ impl AppWindow {
 
     fn reload_dsns_combo(&self) {
         let dc = &self.c.dsn_combo;
+        let sel_opt = dc.selection_string();
         while dc.len() > 0 {
             dc.remove(0);
         }
@@ -272,7 +273,14 @@ impl AppWindow {
             dc.push(dsn.name.clone())
         }
         if self.dsns.len() > 0 {
-            dc.set_selection(Some(0));
+            if let Some(sel) = sel_opt {
+                let sel_set = dc.set_selection_string(&sel);
+                if sel_set.is_none() {
+                    dc.set_selection(Some(0));
+                }
+            } else {
+                dc.set_selection(Some(0));
+            }
         }
     }
 

@@ -42,7 +42,6 @@ pub use args::LoadDsnsDialogArgs;
 use common::ConfigError;
 use common::DsnType;
 use common::RegistryDsn;
-use common::RegistrySetting;
 use common::registry;
 pub(self) use controls::LoadDsnsDialogControls;
 pub use dialog::LoadDsnsDialog;

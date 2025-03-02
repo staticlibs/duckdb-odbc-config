@@ -45,6 +45,16 @@ pub struct RegistryDsn {
     pub settings: Vec<RegistrySetting>,
 }
 
+impl Default for RegistryDsn {
+    fn default() -> Self {
+        Self {
+            name: "".to_string(),
+            dsn_type: DsnType::USER,
+            settings: vec!(),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Root {
     HKLM,
@@ -121,6 +131,28 @@ pub fn delete_dsn(dsn_type: DsnType, name: &str) -> Result<(), ConfigError> {
     odbc_ini_key.delete_subkey(name)?;
     let listing_key = odbc_ini_key.open_subkey_with_flags(DS_LISTING_SUBPATH, enums::KEY_SET_VALUE)?;
     listing_key.delete_value(name)?;
+    Ok(())
+}
+
+pub fn set_dsn_value(dsn_type: DsnType, dsn_name: &str, st_name: &str, value: &str) -> Result<(), ConfigError>{
+    let root = match dsn_type {
+        DsnType::USER => Root::HKCU,
+        DsnType::SYSTEM => Root::HKLM,
+    };
+    let dsn_path = format!("{}\\{}", ODBC_INI_SUBPATH, dsn_name);
+    let dsn_key = open_key(root, &dsn_path, enums::KEY_SET_VALUE)?;
+    dsn_key.set_value(st_name, &value.to_string())?;
+    Ok(())
+}
+
+pub fn delete_dsn_value(dsn_type: DsnType, dsn_name: &str, st_name: &str) -> Result<(), ConfigError>{
+    let root = match dsn_type {
+        DsnType::USER => Root::HKCU,
+        DsnType::SYSTEM => Root::HKLM,
+    };
+    let dsn_path = format!("{}\\{}", ODBC_INI_SUBPATH, dsn_name);
+    let dsn_key = open_key(root, &dsn_path, enums::KEY_SET_VALUE)?;
+    dsn_key.delete_value(st_name)?;
     Ok(())
 }
 

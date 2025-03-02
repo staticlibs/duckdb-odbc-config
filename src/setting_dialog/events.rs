@@ -36,26 +36,31 @@ impl ui::Events<SettingDialogControls> for SettingDialogEvents {
             .build(&mut self.events)?;
 
         ui::event_builder()
-            .control(&c.change_button)
+            .control(&c.dbpath_button)
             .event(nwg::Event::OnButtonClick)
-            .handler(SettingDialog::open_change_dialog)
+            .handler(SettingDialog::on_choose_db_file)
+            .build(&mut self.events)?;
+
+        ui::event_builder()
+            .control(&c.bool_value_checkbox)
+            .event(nwg::Event::OnButtonClick)
+            .handler(SettingDialog::on_bool_value_change)
+            .build(&mut self.events)?;
+
+        ui::event_builder()
+            .control(&c.apply_button)
+            .event(nwg::Event::OnButtonClick)
+            .handler(SettingDialog::on_apply_button)
+            .build(&mut self.events)?;
+        ui::event_builder()
+            .control(&c.delete_button)
+            .event(nwg::Event::OnButtonClick)
+            .handler(SettingDialog::on_delete_button)
             .build(&mut self.events)?;
         ui::event_builder()
             .control(&c.close_button)
             .event(nwg::Event::OnButtonClick)
             .handler(SettingDialog::close)
-            .build(&mut self.events)?;
-
-        ui::event_builder()
-            .control(&c.new_value_input)
-            .event(nwg::Event::OnTextInput)
-            .handler(SettingDialog::on_new_value_change)
-            .build(&mut self.events)?;
-
-        ui::event_builder()
-            .control(&c.change_notice.notice)
-            .event(nwg::Event::OnNotice)
-            .handler(SettingDialog::await_change_dialog)
             .build(&mut self.events)?;
 
         Ok(())
