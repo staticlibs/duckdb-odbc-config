@@ -1,0 +1,16 @@
+[package]
+name = "duckdb_odbc_config"
+version = "1.0.0"
+authors = ["alex@staticlibs.net"]
+edition = "2018"
+
+[build-dependencies]
+embed-resource = "1.8"
+
+[dependencies]
+chrono = "0.4.39"
+clipboard-win = "4.5.0"
+nwg = {version = "1.0.12", package = "native-windows-gui", features = ["all", "flexbox"]}
+nwg_ui = "1.0.1"
+wildmatch = "2.1.1"
+winreg = "0.55"

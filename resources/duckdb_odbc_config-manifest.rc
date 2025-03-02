@@ -1,0 +1,3 @@
+#define RT_MANIFEST 24
+1 RT_MANIFEST "resources/duckdb_odbc_config.exe.manifest"
+2 ICON "resources/icon.ico"
