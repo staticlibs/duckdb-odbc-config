@@ -58,7 +58,6 @@ impl LoadDsnsDialog {
     fn load_dsns_from_registry() -> Result<Vec<RegistryDsn>, ConfigError> {
         let duckdb_driver_path = registry::duckdb_driver_path()?;
         let system_dsns = registry::list_subkeys(registry::Root::HKLM, registry::ODBC_INI_SUBPATH)?;
-        let user_dsns = registry::list_subkeys(registry::Root::HKCU, registry::ODBC_INI_SUBPATH)?;
         let mut res: Vec <RegistryDsn> = vec!();
         for name in system_dsns {
             let dsn_subpath = format!("{}\\{}", registry::ODBC_INI_SUBPATH, name);
@@ -68,12 +67,14 @@ impl LoadDsnsDialog {
                 res.push(RegistryDsn { name, dsn_type, settings })
             }
         }
-        for name in user_dsns {
-            let dsn_subpath = format!("{}\\{}", registry::ODBC_INI_SUBPATH, name);
-            let settings = registry::list_values(registry::Root::HKCU, &dsn_subpath)?;
-            if settings.iter().any(|rs| "Driver" == rs.name && duckdb_driver_path == rs.value) {
-                let dsn_type = DsnType::USER;
-                res.push(RegistryDsn { name, dsn_type, settings })
+        if let Ok(user_dsns) = registry::list_subkeys(registry::Root::HKCU, registry::ODBC_INI_SUBPATH) {
+            for name in user_dsns {
+                let dsn_subpath = format!("{}\\{}", registry::ODBC_INI_SUBPATH, name);
+                let settings = registry::list_values(registry::Root::HKCU, &dsn_subpath)?;
+                if settings.iter().any(|rs| "Driver" == rs.name && duckdb_driver_path == rs.value) {
+                    let dsn_type = DsnType::USER;
+                    res.push(RegistryDsn { name, dsn_type, settings })
+                }
             }
         }
         Ok(res)

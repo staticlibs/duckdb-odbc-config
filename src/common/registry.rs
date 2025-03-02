@@ -106,7 +106,22 @@ pub fn create_dsn(dsn_type: DsnType, name: &str,  database: &str) -> Result<(), 
         DsnType::USER => Root::HKCU,
         DsnType::SYSTEM => Root::HKLM,
     };
-    let odbc_ini_key = open_key(root, ODBC_INI_SUBPATH, enums::KEY_READ)?;
+    let odbc_ini_key = match open_key(root, ODBC_INI_SUBPATH, enums::KEY_READ) {
+        Ok(key) => key,
+        Err(e) => {
+            match dsn_type {
+                DsnType::USER => {
+                    let software_key = open_key(Root::HKCU, "SOFTWARE", enums::KEY_WRITE)?;
+                    let (key, _) = software_key.create_subkey("ODBC\\ODBC.INI")?;
+                    let _ = key.create_subkey(DS_LISTING_SUBPATH)?;
+                    key
+                },
+                DsnType::SYSTEM => {
+                    return Err(e)
+                }
+            }
+        }
+    };
     match odbc_ini_key.open_subkey(name) {
         Ok(_) => return Err(ConfigError::from_string(format!(
             "Data source already exist, name: {}", name))),
