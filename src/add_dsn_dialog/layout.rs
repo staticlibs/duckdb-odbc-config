@@ -23,6 +23,7 @@ pub(super) struct AddDsnDialogLayout {
     root_layout: nwg::FlexboxLayout,
     name_layout: nwg::FlexboxLayout,
     dsn_type_layout: nwg::FlexboxLayout,
+    init_layout: nwg::FlexboxLayout,
     dbpath_layout: nwg::FlexboxLayout,
     use_memory_layout: nwg::FlexboxLayout,
     spacer_layout: nwg::FlexboxLayout,
@@ -106,6 +107,30 @@ impl ui::Layout<AddDsnDialogControls> for AddDsnDialogLayout {
             .parent(&c.window)
             .flex_direction(ui::FlexDirection::Row)
             .auto_spacing(None)
+            .child(&c.init_label)
+            .child_size(ui::size_builder()
+                .width_pt(LABEL_WIDTH_PT)
+                .height_input_form_row()
+                .build())
+            .child(&c.init_input)
+            .child_margin(ui::margin_builder()
+                .start_pt(5)
+                .build())
+            .child_flex_grow(1.0)
+            .child(&c.init_button)
+            .child_size(ui::size_builder()
+                .width_button_normal()
+                .height_button()
+                .build())
+            .child_margin(ui::margin_builder()
+                .start_pt(5)
+                .build())
+            .build_partial(&self.init_layout)?;
+
+        nwg::FlexboxLayout::builder()
+            .parent(&c.window)
+            .flex_direction(ui::FlexDirection::Row)
+            .auto_spacing(None)
             .build_partial(&self.spacer_layout)?;
 
         nwg::FlexboxLayout::builder()
@@ -138,6 +163,7 @@ impl ui::Layout<AddDsnDialogControls> for AddDsnDialogLayout {
             .child_layout(&self.dsn_type_layout)
             .child_layout(&self.dbpath_layout)
             .child_layout(&self.use_memory_layout)
+            .child_layout(&self.init_layout)
             .child_layout(&self.spacer_layout)
             .child_flex_grow(1.0)
             .child_layout(&self.buttons_layout)

@@ -89,6 +89,16 @@ impl AppWindow {
         }
         self.on_dsn_changed(nwg::EventData::NoData);
     }
+    
+    fn non_engine_setting_description(name: &str) -> String {
+        if registry::DATABASE_SETTING_NAME == name {
+            registry::DATABASE_SETTING_DESCRIPTION.to_string()
+        } else if registry::SESSION_INIT_SQL_FILE_SETTING_NAME == name{
+            registry::SESSION_INIT_SQL_FILE_SETTING_DESCRIPTION.to_string()
+        } else {
+            "".to_string()
+        }
+    }
 
     pub(super) fn on_dsn_changed(&mut self, _: nwg::EventData) {
         self.settings = all_settings();
@@ -103,7 +113,7 @@ impl AppWindow {
                         self.settings.push(DuckDbSetting {
                             name: rs.name.to_string(),
                             dsn_value: rs.value.to_string(),
-                            description: if "database" == rs.name { "Path to the database file".to_string() } else { "".to_string() },
+                            description: Self::non_engine_setting_description(&rs.name),
                             ..Default::default()
                         })
                     }

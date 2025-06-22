@@ -36,7 +36,7 @@ impl ui::Events<SettingDialogControls> for SettingDialogEvents {
             .build(&mut self.events)?;
 
         ui::event_builder()
-            .control(&c.dbpath_button)
+            .control(&c.fs_path_button)
             .event(nwg::Event::OnButtonClick)
             .handler(SettingDialog::on_choose_db_file)
             .build(&mut self.events)?;

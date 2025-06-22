@@ -34,6 +34,10 @@ pub(super) struct AddDsnDialogControls {
     pub(super) dbpath_button: nwg::Button,
     pub(super) dbpath_chooser: nwg::FileDialog,
     pub(super) use_memory_db_checkbox: nwg::CheckBox,
+    pub(super) init_label: nwg::Label,
+    pub(super) init_input: nwg::TextInput,
+    pub(super) init_button: nwg::Button,
+    pub(super) init_chooser: nwg::FileDialog,
 
     pub(super) save_button: nwg::Button,
     pub(super) cancel_button: nwg::Button,
@@ -55,7 +59,7 @@ impl ui::Controls for AddDsnDialogControls {
             .build(&mut self.icon)?;
 
         nwg::Window::builder()
-            .size((380, 190))
+            .size((380, 210))
             .icon(Some(&self.icon))
             .center(true)
             .title("Add Data Source")
@@ -118,6 +122,27 @@ impl ui::Controls for AddDsnDialogControls {
             .parent(&self.window)
             .build(&mut self.use_memory_db_checkbox)?;
 
+        nwg::Label::builder()
+            .text("Init SQL file:")
+            .font(Some(&self.font_normal))
+            .h_align(nwg::HTextAlign::Left)
+            .v_align(nwg::VTextAlign::Center)
+            .parent(&self.window)
+            .build(&mut self.init_label)?;
+        nwg::TextInput::builder()
+            .font(Some(&self.font_normal))
+            .parent(&self.window)
+            .build(&mut self.init_input)?;
+        nwg::Button::builder()
+            .text("Choose")
+            .font(Some(&self.font_normal))
+            .parent(&self.window)
+            .build(&mut self.init_button)?;
+        nwg::FileDialog::builder()
+            .title("Choose session init SQL file")
+            .action(nwg::FileDialogAction::Open)
+            .build(&mut self.init_chooser)?;
+
         nwg::Button::builder()
             .text("Save")
             .font(Some(&self.font_normal))
@@ -142,6 +167,8 @@ impl ui::Controls for AddDsnDialogControls {
             .control(&self.dbpath_input)
             .control(&self.dbpath_button)
             .control(&self.use_memory_db_checkbox)
+            .control(&self.init_input)
+            .control(&self.init_button)
             .control(&self.save_button)
             .control(&self.cancel_button)
             .build();

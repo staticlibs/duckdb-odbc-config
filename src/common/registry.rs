@@ -23,6 +23,9 @@ pub const DRIVER_KEY_PATH: &str = "SOFTWARE\\ODBC\\ODBCINST.INI\\DuckDB Driver";
 pub const ODBC_INI_SUBPATH: &str = "SOFTWARE\\ODBC\\ODBC.INI";
 pub const DRIVER_SETTING_NAME: &str = "Driver";
 pub const DATABASE_SETTING_NAME: &str = "database";
+pub const DATABASE_SETTING_DESCRIPTION: &str = "Path to the database file";
+pub const SESSION_INIT_SQL_FILE_SETTING_NAME: &str = "session_init_sql_file";
+pub const SESSION_INIT_SQL_FILE_SETTING_DESCRIPTION: &str = "Path to the session init SQL file";
 pub const DS_LISTING_SUBPATH: &str = "ODBC Data Sources";
 pub const DRIVER_LISTING_LABEL: &str = "DuckDB Driver";
 
@@ -101,7 +104,7 @@ pub fn list_values(root: Root, path: &str) -> Result<Vec<RegistrySetting>, Confi
     Ok(res)
 }
 
-pub fn create_dsn(dsn_type: DsnType, name: &str,  database: &str) -> Result<(), ConfigError> {
+pub fn create_dsn(dsn_type: DsnType, name: &str,  database: &str, session_init_sql_file: &str) -> Result<(), ConfigError> {
     let root = match dsn_type {
         DsnType::USER => Root::HKCU,
         DsnType::SYSTEM => Root::HKLM,
@@ -132,6 +135,7 @@ pub fn create_dsn(dsn_type: DsnType, name: &str,  database: &str) -> Result<(), 
     let driver_path = duckdb_driver_path()?;
     dsn_key.set_value(DRIVER_SETTING_NAME, &driver_path)?;
     dsn_key.set_value(DATABASE_SETTING_NAME, &database.to_string())?;
+    dsn_key.set_value(SESSION_INIT_SQL_FILE_SETTING_NAME, &session_init_sql_file.to_string())?;
     let listing_key = odbc_ini_key.open_subkey_with_flags(DS_LISTING_SUBPATH, enums::KEY_SET_VALUE)?;
     listing_key.set_value(name, &DRIVER_LISTING_LABEL)?;
     Ok(())

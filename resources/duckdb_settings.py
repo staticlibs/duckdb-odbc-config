@@ -31,7 +31,7 @@ order by lower(name)
 tuples = cur.fetchall()
 
 # prefix
-print("""/*
+print(r"""/*
  * Copyright 2025, DuckDB Labs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

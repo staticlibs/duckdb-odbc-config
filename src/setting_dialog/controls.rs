@@ -31,8 +31,8 @@ pub(super) struct SettingDialogControls {
     pub(super) default_value_input: nwg::TextInput,
     pub(super) dsn_value_label: nwg::Label,
     pub(super) dsn_value_input: nwg::TextInput,
-    pub(super) dbpath_button: nwg::Button,
-    pub(super) dbpath_chooser: nwg::FileDialog,
+    pub(super) fs_path_button: nwg::Button,
+    pub(super) fs_path_chooser: nwg::FileDialog,
     pub(super) bool_value_checkbox: nwg::CheckBox,
     pub(super) description_label: nwg::Label,
 
@@ -98,11 +98,11 @@ impl ui::Controls for SettingDialogControls {
             .text("Choose")
             .font(Some(&self.font_normal))
             .parent(&self.window)
-            .build(&mut self.dbpath_button)?;
+            .build(&mut self.fs_path_button)?;
         nwg::FileDialog::builder()
-            .title("Choose database file")
+            .title("Choose file")
             .action(nwg::FileDialogAction::Open)
-            .build(&mut self.dbpath_chooser)?;
+            .build(&mut self.fs_path_chooser)?;
 
         nwg::CheckBox::builder()
             .check_state(nwg::CheckBoxState::Unchecked)
@@ -142,7 +142,7 @@ impl ui::Controls for SettingDialogControls {
             .control(&self.name_input)
             .control(&self.default_value_input)
             .control(&self.dsn_value_input)
-            .control(&self.dbpath_button)
+            .control(&self.fs_path_button)
             .control(&self.bool_value_checkbox)
             .control(&self.apply_button)
             .control(&self.delete_button)

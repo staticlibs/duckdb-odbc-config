@@ -75,7 +75,7 @@ impl ui::Layout<SettingDialogControls> for SettingDialogLayout {
                 .start_pt(5)
                 .build())
             .child_flex_grow(1.0)
-            .child(&c.dbpath_button)
+            .child(&c.fs_path_button)
             .child_size(ui::size_builder()
                 .width_button_normal()
                 .height_button()

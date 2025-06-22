@@ -47,6 +47,22 @@ impl AddDsnDialog {
         }
     }
 
+    pub(super) fn on_choose_init_file(&mut self, _: nwg::EventData) {
+        if let Ok(dir) = std::env::current_dir() {
+            if let Some(d) = dir.to_str() {
+                let _ = self.c.init_chooser.set_default_folder(d);
+            }
+        }
+        if self.c.init_chooser.run(Some(&self.c.window)) {
+            self.c.init_input.set_text("");
+            if let Ok(file) = self.c.init_chooser.get_selected_item() {
+                let fpath_st = file.to_string_lossy().to_string();
+                self.c.init_input.set_text(&fpath_st);
+                self.update_save_button_state();
+            }
+        }
+    }
+
     pub(super) fn on_memory_checkbox_changed(&mut self, _: nwg::EventData) {
         let checked = self.c.use_memory_db_checkbox.check_state() == nwg::CheckBoxState::Checked;
         if checked {
@@ -69,11 +85,12 @@ impl AddDsnDialog {
         let dbpath = if in_memory {
             ":memory:".to_string()
         } else {
-            self.c.dbpath_input.text()
+            self.c.dbpath_input.text().trim().to_string()
         };
         if dbpath.is_empty() {
             return;
         }
+        let session_init_sql_file = self.c.init_input.text().trim().to_string();
         let dsn_type_opt = self.c.dsn_type_combo.selection_string();
         let dsn_type_st = dsn_type_opt.unwrap_or("".to_string());
         if dsn_type_st.is_empty() {
@@ -84,7 +101,7 @@ impl AddDsnDialog {
         } else {
             DsnType::USER
         };
-        match registry::create_dsn(dsn_type, &name, &dbpath) {
+        match registry::create_dsn(dsn_type, &name, &dbpath, &session_init_sql_file) {
             Ok(()) => {
                 self.added_dsn = AddDsnDialogResult::success(&name);
                 self.close(nwg::EventData::NoData)

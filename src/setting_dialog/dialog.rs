@@ -71,11 +71,11 @@ impl SettingDialog {
     pub(super) fn on_choose_db_file(&mut self, _: nwg::EventData) {
         if let Ok(dir) = std::env::current_dir() {
             if let Some(d) = dir.to_str() {
-                let _ = self.c.dbpath_chooser.set_default_folder(d);
+                let _ = self.c.fs_path_chooser.set_default_folder(d);
             }
         }
-        if self.c.dbpath_chooser.run(Some(&self.c.window)) {
-            if let Ok(file) = self.c.dbpath_chooser.get_selected_item() {
+        if self.c.fs_path_chooser.run(Some(&self.c.window)) {
+            if let Ok(file) = self.c.fs_path_chooser.get_selected_item() {
                 let fpath_st = file.to_string_lossy().to_string();
                 self.c.dsn_value_input.set_text(&fpath_st);
             }
@@ -114,11 +114,11 @@ impl ui::PopupDialog<SettingDialogArgs, SettingDialogResult> for SettingDialog {
             self.c.dsn_value_input.set_readonly(false);
             self.c.bool_value_checkbox.set_enabled(false);
         }
-        if "database" == st.name {
-            self.c.dbpath_button.set_enabled(true);
+        if registry::DATABASE_SETTING_NAME == st.name || registry::SESSION_INIT_SQL_FILE_SETTING_NAME == st.name {
+            self.c.fs_path_button.set_enabled(true);
             self.c.delete_button.set_enabled(false);
         } else {
-            self.c.dbpath_button.set_enabled(false);
+            self.c.fs_path_button.set_enabled(false);
         }
         let desc_text = ui::wrap_label_text(&self.args.setting.description, 65);
         self.c.description_label.set_text(&desc_text);

@@ -47,6 +47,12 @@ impl ui::Events<AddDsnDialogControls> for AddDsnDialogEvents {
             .build(&mut self.events)?;
 
         ui::event_builder()
+            .control(&c.init_button)
+            .event(nwg::Event::OnButtonClick)
+            .handler(AddDsnDialog::on_choose_init_file)
+            .build(&mut self.events)?;
+
+        ui::event_builder()
             .control(&c.use_memory_db_checkbox)
             .event(nwg::Event::OnButtonClick)
             .handler(AddDsnDialog::on_memory_checkbox_changed)
